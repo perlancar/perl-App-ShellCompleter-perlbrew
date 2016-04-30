@@ -96,9 +96,11 @@ GetOptions(
                 'ld'       => $specnoop,
                 'debug'    => $specnoop,
                 'clang'    => $specnoop,
+                'no-patchperl' => $specnoop,
                 'D=s'      => $specnoop,
                 'U=s'      => $specnoop,
                 'A=s'      => $specnoop,
+                'destdir=s' => $specnoop,
                 'sitecustomize=s' => $specnoop,
             },
         },
@@ -338,7 +340,7 @@ Now L<perlbrew> has bash completion:
 
 =head1 DESCRIPTION
 
-Last updated for L<perlbrew> version 0.74.
+Last updated for L<perlbrew> version 0.75.
 
 
 =head1 SEE ALSO
