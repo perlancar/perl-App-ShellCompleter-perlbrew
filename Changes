@@ -1,5 +1,11 @@
 Revision history for App-ShellCompleter-perlbrew
 
+0.003   2016-04-30 (PERLANCAR)
+
+	- Update to perlbrew 0.75: add --no-patchperl and --destdir for
+	  'install'.
+
+
 0.002   2016-04-30 (PERLANCAR)
 
         - No functional changes.
