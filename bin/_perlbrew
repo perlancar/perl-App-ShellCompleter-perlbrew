@@ -3,7 +3,6 @@
 # DATE
 # VERSION
 
-# NO_PERINCI_CMDLINE_SCRIPT
 # FRAGMENT id=shcompgen-hint completer=1 for=perlbrew
 
 use 5.010001;

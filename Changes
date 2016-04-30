@@ -1,5 +1,13 @@
 Revision history for App-ShellCompleter-perlbrew
 
+0.002   2016-04-30 (PERLANCAR)
+
+        - No functional changes.
+
+        - [build] Rebuild, remove COMPLETION section in _perlbrew's POD because
+          _perlbrew itself is a completer script.
+
+
 0.001   2016-04-30 (PERLANCAR)
 
         - First release.
