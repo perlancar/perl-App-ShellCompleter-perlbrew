@@ -1,0 +1,347 @@
+#!perl
+
+# DATE
+# VERSION
+
+# NO_PERINCI_CMDLINE_SCRIPT
+# FRAGMENT id=shcompgen-hint completer=1 for=perlbrew
+
+use 5.010001;
+use strict;
+use warnings;
+use Log::Any::IfLOG '$log';
+
+use Complete::File qw(complete_file);
+use Complete::Util qw(complete_array_elem);
+use Getopt::Long::Subcommand;
+
+die "This script is for shell completion only\n"
+    unless $ENV{COMP_LINE} || $ENV{COMMAND_LINE};
+
+my $noop = sub {};
+my $specnoop = { handler => $noop };
+
+sub _available {
+    require File::Spec;
+    require File::Slurper;
+    my $tmp_path = File::Spec->tmpdir() . "/_perlbrew_available_perls.tmp";
+    unless ((-f $tmp_path) && (-M _) <= 1) {
+        File::Slurper::write_text($tmp_path, scalar `perlbrew available`);
+    }
+    my $available = File::Slurper::read_text($tmp_path);
+    my @res;
+    for (split /^/, $available) {
+        s/^[i ] //;
+        chomp;
+        push @res, $_;
+    }
+    @res;
+}
+
+sub _available_versions {
+    my @res;
+    for (_available()) {
+        s/\D+(?=\d)//;
+        push @res, $_;
+    }
+    @res;
+}
+
+sub _installed {
+    my @res;
+    for (split /^/, `perlbrew list`) {
+        s/^[* ] //;
+        chomp;
+        push @res, $_;
+    }
+    @res;
+}
+
+sub _installed_versions {
+    my @res;
+    for (_installed()) {
+        s/\D+(?=\d)//;
+        push @res, $_;
+    }
+    @res;
+}
+
+GetOptions(
+    options => {
+        'quiet|q'   => $specnoop,
+        'verbose|v' => $specnoop,
+        'version'   => $specnoop,
+    },
+    subcommands => {
+        init => {
+            options => {
+            },
+        },
+        info => {
+            options => {
+            },
+        },
+
+        install => {
+            options => {
+                'force|f'  => $specnoop,
+                'j=i'      => $specnoop,
+                'notest|n' => $specnoop,
+                'switch'   => $specnoop,
+                'as=s'     => $specnoop,
+                'noman'    => $specnoop,
+                'thread'   => $specnoop,
+                'multi'    => $specnoop,
+                '64int'    => $specnoop,
+                '64all'    => $specnoop,
+                'ld'       => $specnoop,
+                'debug'    => $specnoop,
+                'clang'    => $specnoop,
+                'D=s'      => $specnoop,
+                'U=s'      => $specnoop,
+                'A=s'      => $specnoop,
+                'sitecustomize=s' => $specnoop,
+            },
+        },
+        uninstall => {
+            options => {
+            },
+        },
+        available => {
+            options => {
+                'all' => $specnoop,
+            },
+        },
+        lib => {
+            options => {
+            },
+        },
+        alias => {
+            options => {
+                'f' => $specnoop,
+            },
+        },
+        'upgrade-perl' => {
+            options => {
+            },
+        },
+
+        list => {
+            options => {
+            },
+        },
+        use => {
+            options => {
+            },
+        },
+        off => {
+            options => {
+            },
+        },
+        switch => {
+            options => {
+            },
+        },
+        'switch-off' => {
+            options => {
+            },
+        },
+        exec => {
+            options => {
+                'with=s' => $specnoop,
+            },
+        },
+
+        'self-install' => {
+            options => {
+            },
+        },
+        'self-upgrade' => {
+            options => {
+            },
+        },
+
+        'install-patchperl' => {
+            options => {
+            },
+        },
+        'install-cpanm' => {
+            options => {
+            },
+        },
+        'install-multiple' => {
+            options => {
+                'both=s'            => $specnoop,
+                'common-variations' => $specnoop,
+                'all-variations'    => $specnoop,
+                'append=s'          => $specnoop,
+            },
+        },
+
+        download => {
+            options => {
+            },
+        },
+        clean => {
+            options => {
+            },
+        },
+        version => {
+            options => {
+            },
+        },
+        help => {
+            options => {
+            },
+        },
+
+        'symlink-executables' => {
+            options => {
+            },
+        },
+    },
+
+    completion => sub {
+        my %args = @_;
+        $log->tracef("[_perlbrew] args=%s", \%args);
+
+        my $subc = $args{subcommand}->[0] // '';
+        my $word = $args{word};
+        my $type = $args{type};
+        my $opt  = $args{opt};
+
+        if ($subc eq 'info') {
+            if ($type eq 'arg') {
+                require Complete::Module;
+                return Complete::Module::complete_module(word => $word);
+            }
+        } elsif ($subc eq 'install' || $subc eq 'install-multiple') {
+            if ($type eq 'optval' && $opt =~ /\A(-j)\z/) {
+                return complete_array_elem(word => $word, array => [1..10]);
+            } elsif ($type eq 'optval' && $opt =~ /\A(--sitecustomize)\z/) {
+                return complete_file(word => $word);
+            } elsif ($type eq 'optval' && $opt =~ /\A(--both)\z/) {
+                return complete_array_elem(
+                    word => $word,
+                    array => [qw/thread multi ld 64int 64all debug clang/],
+                );
+            } elsif ($type eq 'arg') {
+                # url, no completion for now
+                return undef if $word =~ m!\A\w+://!;
+                # path, complete archive name
+                return complete_file(
+                    word => $word,
+                    filter => sub {
+                        return 0 unless -f || (-d _);
+                        if (-f _) {
+                            return 0 unless
+                                /\.(tar\.gz|tar\.bz2|tar\.xz|tar)\z/i;
+                        }
+                        1;
+                    },
+                ) if $word =~ m![/\\]|\.\.!;
+                # complete perl versions
+                {
+                    local $Complete::Common::OPT_FUZZY = 0;
+                    return complete_array_elem(
+                        word => $word,
+                        array => [
+                            _available(),
+                            _available_versions(),
+                            "perl-stable", "stable",
+                            "perl-blead", "blead",
+                        ],
+                    );
+                }
+            }
+        } elsif ($subc eq 'uninstall') {
+            if ($type eq 'arg') {
+                local $Complete::Common::OPT_FUZZY = 0;
+                return complete_array_elem(
+                    word => $word,
+                    array => [_installed()],
+                );
+            }
+        } elsif ($subc eq 'use') {
+            if ($type eq 'arg') {
+                local $Complete::Common::OPT_FUZZY = 0;
+                return complete_array_elem(
+                    word => $word,
+                    array => [_installed(), _installed_versions()],
+                );
+            }
+        } elsif ($subc eq 'switch') {
+            if ($type eq 'arg') {
+                local $Complete::Common::OPT_FUZZY = 0;
+                return complete_array_elem(
+                    word => $word,
+                    array => [_installed(), _installed_versions()],
+                );
+            }
+        } elsif ($subc eq 'alias') {
+            # XXX todo
+        } elsif ($subc eq 'exec') {
+            if ($type eq 'optval' && $opt =~ /\A(--with)\z/) {
+                # XXX todo, allow completing comma-separated list of perls
+            }
+        } elsif ($subc eq 'env') {
+            if ($type eq 'arg') {
+                local $Complete::Common::OPT_FUZZY = 0;
+                return complete_array_elem(
+                    word => $word,
+                    array => [_installed()],
+                );
+            }
+        } elsif ($subc eq 'symlink-executables') {
+            if ($type eq 'arg') {
+                local $Complete::Common::OPT_FUZZY = 0;
+                return complete_array_elem(
+                    word => $word,
+                    array => [_installed()],
+                );
+            }
+        } elsif ($subc eq 'lib') {
+            # XXX todo
+        } elsif ($subc eq 'download') {
+            if ($type eq 'arg') {
+                local $Complete::Common::OPT_FUZZY = 0;
+                return complete_array_elem(
+                    word => $word,
+                    array => [
+                        _available(),
+                    ],
+                );
+            }
+        }
+
+        undef;
+    },
+);
+
+# ABSTRACT: Shell completer for perlbrew
+# PODNAME:
+
+=head1 SYNOPSIS
+
+To install, install this module and then in your bash (and/or bash startup
+file):
+
+ complete -C _perlbrew perlbrew
+
+or, you can use L<shcompgen> to do that for you automatically.
+
+Now L<perlbrew> has bash completion:
+
+ % perlbrew i<tab>
+ % perlbrew install --a<tab>
+ % perlbrew use <tab>
+
+
+=head1 DESCRIPTION
+
+Last updated for L<perlbrew> version 0.74.
+
+
+=head1 SEE ALSO
+
+L<perlbrew>
