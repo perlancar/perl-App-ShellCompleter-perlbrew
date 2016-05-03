@@ -65,6 +65,36 @@ sub _installed_versions {
     @res;
 }
 
+sub _complete_available_install {
+    my $word = shift;
+
+    local $Complete::Common::OPT_FUZZY = 0;
+    complete_array_elem(
+        word => $word,
+        array => [
+            ( _available(),
+              "perl-stable", "stable",
+              "perl-blead", "blead" ) x
+                  ($word =~ /^\D|^$/ ? 1:0),
+            _available_versions(),
+        ],
+    );
+}
+
+sub _complete_available_use {
+    my $word = shift;
+
+    local $Complete::Common::OPT_FUZZY = 0;
+    complete_array_elem(
+        word => $word,
+        array => [
+            ( _available() ) x
+                ($word =~ /^\D|^$/ ? 1:0),
+            _available_versions(),
+        ],
+    );
+}
+
 GetOptions(
     options => {
         'quiet|q'   => $specnoop,
@@ -242,18 +272,7 @@ GetOptions(
                     },
                 ) if $word =~ m![/\\]|\.\.!;
                 # complete perl versions
-                {
-                    local $Complete::Common::OPT_FUZZY = 0;
-                    return complete_array_elem(
-                        word => $word,
-                        array => [
-                            _available(),
-                            _available_versions(),
-                            "perl-stable", "stable",
-                            "perl-blead", "blead",
-                        ],
-                    );
-                }
+                return _complete_available_install($word);
             }
         } elsif ($subc eq 'uninstall') {
             if ($type eq 'arg') {
@@ -265,19 +284,11 @@ GetOptions(
             }
         } elsif ($subc eq 'use') {
             if ($type eq 'arg') {
-                local $Complete::Common::OPT_FUZZY = 0;
-                return complete_array_elem(
-                    word => $word,
-                    array => [_installed(), _installed_versions()],
-                );
+                return _complete_available_use($word);
             }
         } elsif ($subc eq 'switch') {
             if ($type eq 'arg') {
-                local $Complete::Common::OPT_FUZZY = 0;
-                return complete_array_elem(
-                    word => $word,
-                    array => [_installed(), _installed_versions()],
-                );
+                return _complete_available_use($word);
             }
         } elsif ($subc eq 'alias') {
             # XXX todo
