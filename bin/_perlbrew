@@ -50,6 +50,7 @@ sub _installed {
     my @res;
     for (split /^/, `perlbrew list`) {
         s/^[* ] //;
+        s/ \(.+\)$//; # alias
         chomp;
         push @res, $_;
     }
@@ -59,13 +60,34 @@ sub _installed {
 sub _installed_versions {
     my @res;
     for (_installed()) {
+        next unless /\d/;
         s/\D+(?=\d)//;
         push @res, $_;
     }
     @res;
 }
 
-sub _complete_available_install {
+sub _alias {
+    my @res;
+    for (split /^/, `perlbrew list`) {
+        s/^[* ] //;
+        s/ \(.+\)$// or next; # alias
+        chomp;
+        push @res, $_;
+    }
+    @res;
+}
+
+sub _lib {
+    my @res;
+    for (split /^/, `perlbrew lib list`) {
+        chomp;
+        push @res, $_;
+    }
+    @res;
+}
+
+sub _complete_available_to_install {
     my $word = shift;
 
     local $Complete::Common::OPT_FUZZY = 0;
@@ -81,16 +103,37 @@ sub _complete_available_install {
     );
 }
 
-sub _complete_available_use {
+sub _complete_installed_to_use {
     my $word = shift;
 
     local $Complete::Common::OPT_FUZZY = 0;
     complete_array_elem(
         word => $word,
         array => [
-            ( _available() ) x
+            ( _installed() ) x
                 ($word =~ /^\D|^$/ ? 1:0),
-            _available_versions(),
+            _installed_versions(),
+        ],
+    );
+}
+
+sub _complete_installed_name {
+    my $word = shift;
+    local $Complete::Common::OPT_FUZZY = 0;
+    return complete_array_elem(
+        word => $word,
+        array => [_installed()],
+    );
+}
+
+sub _complete_alias {
+    my $word = shift;
+
+    local $Complete::Common::OPT_FUZZY = 0;
+    complete_array_elem(
+        word => $word,
+        array => [
+            _alias(),
         ],
     );
 }
@@ -146,10 +189,20 @@ GetOptions(
         lib => {
             options => {
             },
+            subcommands => {
+                list   => {},
+                create => {},
+                delete => {},
+            },
         },
         alias => {
             options => {
                 'f' => $specnoop,
+            },
+            subcommands => {
+                create => {},
+                rename => {},
+                delete => {},
             },
         },
         'upgrade-perl' => {
@@ -236,7 +289,8 @@ GetOptions(
         my %args = @_;
         $log->tracef("[_perlbrew] args=%s", \%args);
 
-        my $subc = $args{subcommand}->[0] // '';
+        my $subc  = $args{subcommand}->[0] // '';
+        my $subc2 = $args{subcommand}->[1] // '';
         my $word = $args{word};
         my $type = $args{type};
         my $opt  = $args{opt};
@@ -272,7 +326,7 @@ GetOptions(
                     },
                 ) if $word =~ m![/\\]|\.\.!;
                 # complete perl versions
-                return _complete_available_install($word);
+                return _complete_available_to_install($word);
             }
         } elsif ($subc eq 'uninstall') {
             if ($type eq 'arg') {
@@ -284,17 +338,32 @@ GetOptions(
             }
         } elsif ($subc eq 'use') {
             if ($type eq 'arg') {
-                return _complete_available_use($word);
+                return _complete_installed_to_use($word);
             }
         } elsif ($subc eq 'switch') {
             if ($type eq 'arg') {
-                return _complete_available_use($word);
+                return _complete_installed_to_use($word);
             }
         } elsif ($subc eq 'alias') {
-            # XXX todo
+            if ($subc2 eq 'create') {
+                if ($type eq 'arg' && $args{argpos} == 2) {
+                    return _complete_installed_name($word);
+                }
+            } elsif ($subc2 eq 'rename' || $subc2 eq 'delete') {
+                if ($type eq 'arg' && $args{argpos} == 2) {
+                    return _complete_alias($word);
+                }
+            }
         } elsif ($subc eq 'exec') {
             if ($type eq 'optval' && $opt =~ /\A(--with)\z/) {
-                # XXX todo, allow completing comma-separated list of perls
+                my @items = split ',', $word, -1;
+                $word = @items ? pop(@items) : '';
+                return [
+                    map { $_ = join(",", @items) . (@items ? ',':'') . $_ }
+                        grep { my $it = $_; !(grep {$_ eq $it} @items) }
+                        @{ _complete_installed_name($word) }
+                    ];
+
             }
         } elsif ($subc eq 'env') {
             if ($type eq 'arg') {
@@ -313,7 +382,17 @@ GetOptions(
                 );
             }
         } elsif ($subc eq 'lib') {
-            # XXX todo
+            if ($subc2 eq 'delete') {
+                if ($type eq 'arg' && $args{argpos} == 2) {
+                    local $Complete::Common::OPT_FUZZY = 0;
+                    return complete_array_elem(
+                        word => $word,
+                        array => [
+                            _lib(),
+                        ],
+                    );
+                }
+            }
         } elsif ($subc eq 'download') {
             if ($type eq 'arg') {
                 local $Complete::Common::OPT_FUZZY = 0;
