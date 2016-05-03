@@ -1,5 +1,13 @@
 Revision history for App-ShellCompleter-perlbrew
 
+0.004   2016-05-03 (PERLANCAR)
+
+	- Add completion for subcommands alias, lib, exec.
+
+	- Tweak completion of perls to use: only offer version numbers if
+	  word begins with a number.
+
+
 0.003   2016-04-30 (PERLANCAR)
 
 	- Update to perlbrew 0.75: add --no-patchperl and --destdir for
