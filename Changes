@@ -1,5 +1,11 @@
 Revision history for App-ShellCompleter-perlbrew
 
+0.005   2016-06-02 (PERLANCAR)
+
+        - [refactor] Move routine to .pm file so it can be reused by other
+          dists.
+
+
 0.004   2016-05-03 (PERLANCAR)
 
 	- Add completion for subcommands alias, lib, exec.

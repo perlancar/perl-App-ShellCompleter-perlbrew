@@ -144,6 +144,8 @@ sub complete_perl_alias {
 1;
 # ABSTRACT: Shell completion for perlbrew
 
+=for Pod::Coverage ^(.+)$
+
 =head1 SYNOPSIS
 
 See L<_perlbrew> included in this distribution.
