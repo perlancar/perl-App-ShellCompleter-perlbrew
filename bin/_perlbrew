@@ -27,7 +27,8 @@ use Complete::Util qw(complete_array_elem);
 use Getopt::Long::Subcommand;
 
 die "This script is for shell completion only\n"
-    unless $ENV{COMP_LINE} || $ENV{COMMAND_LINE};
+    unless $ENV{GETOPT_LONG_SUBCOMMAND_DUMP} ||
+    $ENV{COMP_LINE} || $ENV{COMMAND_LINE};
 
 my $noop = sub {};
 my $specnoop = { handler => $noop };
