@@ -8,7 +8,7 @@
 use 5.010001;
 use strict;
 use warnings;
-use Log::Any::IfLOG '$log';
+use Log::ger;
 
 use App::ShellCompleter::perlbrew qw(
                                         complete_perl_available_to_install
@@ -182,7 +182,7 @@ GetOptions(
 
     completion => sub {
         my %args = @_;
-        $log->tracef("[_perlbrew] args=%s", \%args);
+        log_trace("[_perlbrew] args=%s", \%args);
 
         my $subc  = $args{subcommand}->[0] // '';
         my $subc2 = $args{subcommand}->[1] // '';
