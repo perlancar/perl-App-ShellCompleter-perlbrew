@@ -33,7 +33,8 @@ sub list_available_perls {
     my $available = File::Slurper::read_text($tmp_path);
     my @res;
     for (split /^/, $available) {
-        s/^[i ] //;
+        s/\s+(available from|INSTALLED on).+//;
+        s/^i?\s*//;
         chomp;
         push @res, $_;
     }
@@ -52,7 +53,8 @@ sub list_available_perl_versions {
 sub list_installed_perls {
     my @res;
     for (split /^/, `perlbrew list`) {
-        s/^[* ] //;
+        s/\s+\(installed on.+?\)//;
+        s/^\s*[* ] //;
         s/ \(.+\)$//; # alias
         chomp;
         push @res, $_;
