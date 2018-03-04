@@ -254,7 +254,7 @@ GetOptions(
                 my @items = split ',', $word, -1;
                 $word = @items ? pop(@items) : '';
                 return [
-                    map { $_ = join(",", @items) . (@items ? ',':'') . $_ }
+                    map { my $s = join(",", @items) . (@items ? ',':'') . $_; $s }
                         grep { my $it = $_; !(grep {$_ eq $it} @items) }
                         @{ complete_perl_installed_name($word) }
                     ];
