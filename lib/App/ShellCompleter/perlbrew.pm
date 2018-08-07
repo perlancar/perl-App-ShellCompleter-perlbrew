@@ -35,6 +35,7 @@ sub list_available_perls {
     for my $line (split /^/, $available) {
         $line =~ s/\s+(available from|INSTALLED on).+//;
         $line =~ s/^i?\s*//;
+        $line =~ s/\s+$//;
         chomp $line;
         push @res, $line;
     }
@@ -56,6 +57,7 @@ sub list_installed_perls {
         $line =~ s/\s+\(installed on.+?\)//;
         $line =~ s/^\s*[* ] //;
         $line =~ s/ \(.+\)$//; # alias
+        $line =~ s/\s+$//;
         chomp $line;
         push @res, $line;
     }
@@ -77,6 +79,7 @@ sub list_perl_aliases {
     for my $line (split /^/, `perlbrew list`) {
         $line =~ s/^[* ] //;
         $line =~ s/ \(.+\)$// or next; # alias
+        $line =~ s/\s+$//;
         chomp $line;
         push @res, $line;
     }
