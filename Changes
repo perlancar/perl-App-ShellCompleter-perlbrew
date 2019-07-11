@@ -1,29 +1,29 @@
-0.008   2018-03-04 (PERLANCAR)
+0.008   2018-03-04  Released-By: PERLANCAR
 
 	- Update to newer version of perlbrew ('available from' after each
 	  perl in 'perlbrew available', and 'installed on' after each perl
 	  in 'perlbrew list').
 
 
-0.007   2017-07-10 (PERLANCAR)
+0.007   2017-07-10  Released-By: PERLANCAR
 
 	- No functional changes.
 
 	- Replace Log::Any with Log::ger.
 
 
-0.006   2016-10-21 (PERLANCAR)
+0.006   2016-10-21  Released-By: PERLANCAR
 
         - Allow script to be dumped by Getopt::Long::Subcommand::Dump.
 
 
-0.005   2016-06-02 (PERLANCAR)
+0.005   2016-06-02  Released-By: PERLANCAR
 
         - [refactor] Move routines to .pm file so they can be reused by other
           dists.
 
 
-0.004   2016-05-03 (PERLANCAR)
+0.004   2016-05-03  Released-By: PERLANCAR
 
 	- Add completion for subcommands alias, lib, exec.
 
@@ -31,13 +31,13 @@
 	  word begins with a number.
 
 
-0.003   2016-04-30 (PERLANCAR)
+0.003   2016-04-30  Released-By: PERLANCAR
 
 	- Update to perlbrew 0.75: add --no-patchperl and --destdir for
 	  'install'.
 
 
-0.002   2016-04-30 (PERLANCAR)
+0.002   2016-04-30  Released-By: PERLANCAR
 
         - No functional changes.
 
@@ -45,6 +45,6 @@
           _perlbrew itself is a completer script.
 
 
-0.001   2016-04-30 (PERLANCAR)
+0.001   2016-04-30  Released-By: PERLANCAR
 
         - First release.
