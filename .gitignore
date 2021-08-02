@@ -2,3 +2,4 @@ App-ShellCompleter-perlbrew-*
 .build
 *~
 nytprof*
+.DS_Store
